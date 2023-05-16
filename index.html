@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Import OBJ Model - Babylon.js</title>
+    <style>
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="renderCanvas"></canvas>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        // Get the canvas element
+        var canvas = document.getElementById("renderCanvas");
+
+        // Create the Babylon.js engine
+        var engine = new BABYLON.Engine(canvas, true);
+
+        // Create a scene
+        var scene = new BABYLON.Scene(engine);
+
+        // Create a camera
+        var camera = new BABYLON.FreeCamera(
+          "camera",
+          new BABYLON.Vector3(0, 5, -10),
+          scene
+        );
+
+        // Create a light
+        var light = new BABYLON.HemisphericLight(
+          "light",
+          new BABYLON.Vector3(0, 1, 0),
+          scene
+        );
+
+        // Import OBJ model
+        BABYLON.SceneLoader.ImportMesh("", "https://bobrathgeber.github.io/MammothSkull.obj", "", scene, function (meshes) {
+          // Scale and position the model
+          var importedModel = meshes[0];
+          importedModel.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+          importedModel.position.y = 1;
+
+          // Rotate model with mouse movement
+          var startingPoint;
+          var currentRotation = new BABYLON.Vector3(0, 0, 0);
+
+          canvas.addEventListener("pointerdown", function (event) {
+            startingPoint = {
+              x: event.clientX,
+              y: event.clientY,
+            };
+          });
+
+          canvas.addEventListener("pointermove", function (event) {
+            if (!startingPoint) return;
+            var deltaX = event.clientX - startingPoint.x;
+            var deltaY = event.clientY - startingPoint.y;
+            importedModel.rotation.y =
+              currentRotation.y + (deltaX / canvas.width) * Math.PI * 2;
+            importedModel.rotation.x =
+              currentRotation.x + (deltaY / canvas.height) * Math.PI * 2;
+          });
+
+          canvas.addEventListener("pointerup", function () {
+            startingPoint = null;
+            currentRotation = importedModel.rotation.clone();
+          });
+
+          // Run the render loop
+          engine.runRenderLoop(function () {
+            scene.render();
+          });
+        });
+
+        // Resize the Babylon.js engine on window resize
+        window.addEventListener("resize", function () {
+          engine.resize();
+        });
+      });
+    </script>
+  </body>
+</html>
